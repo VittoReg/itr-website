@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ trip.name }} - Booking{% endblock %}
+
+{% block content %}
+    <h1 class="text-white mb-4">Book Your Trip to the {{ trip.name }}</h1>
+    <!-- APPLY THE NEW PAPYRUS STYLE HERE -->
+    <div class="papyrus-background text-start mb-5 mx-auto" style="max-width: 900px;">
+        {{ trip.description|safe }}
+    </div>
+
+    <!-- Trip Includes List -->
+    <div class="text-white mb-4 mx-auto" style="max-width: 900px;">
+        <h3 class="text-center mb-3">Trip Includes:</h3>
+        <ul class="list-unstyled d-flex flex-wrap justify-content-center gap-3">
+            <li><i class="bi bi-check-circle text-success me-2"></i>🍝 Food</li>
+            <li><i class="bi bi-check-circle text-success me-2"></i>🍷 Wine</li>
+            <li><i class="bi bi-check-circle text-success me-2"></i>🚐 Vehicle</li>
+        </ul>
+    </div>
+    <br><br>
+
+        <!-- ADD THE CALENDAR LEGEND HERE -->
+    <div class="d-flex justify-content-center gap-4 mb-4 text-white">
+        <span><span class="legend-dot legend-active"></span> Active</span>
+        <span><span class="legend-dot legend-full"></span> Full</span>
+    </div>
+
+    <!-- This is where the calendar will appear -->
+    <div id="calendar"></div>
+
+<!-- ADD THIS HIDDEN BUTTON -->
+<button id="showModalBtn" type="button" class="d-none" data-bs-toggle="modal" data-bs-target="#bookingModal">
+</button>
+
+<!-- ADD THE MODAL HTML HERE -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background-color: #000; border: 1px solid #eb700b; color: white;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="bookingModalLabel">Book Your Trip</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Replace the placeholder paragraph with a real form -->
+        <form id="bookingForm" method="POST" action="{% url 'trip_detail' trip.id %}">
+            {% csrf_token %}
+            
+            <input type="hidden" name="scheduled_trip" id="id_scheduled_trip">
+            
+            <!-- Manually rendering fields for better control -->
+            <div class="mb-3">
+                <label for="{{ form.customer_name.id_for_label }}" class="form-label">Name</label>
+                {{ form.customer_name }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.customer_email.id_for_label }}" class="form-label">Email</label>
+                {{ form.customer_email }}
+            </div>
+
+            <!-- Row for Adults and Price -->
+            <div class="mb-3">
+                <label for="{{ form.adults.id_for_label }}" class="form-label d-block">Adults</label>
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    {{ form.adults }}
+                    <!-- NEW Price Widget -->
+                    <div class="price-widget">
+                        <div class="price-label">ESTIMATED TOTAL</div>
+                        <div class="price-amount">
+                            €<span id="dynamicPrice">{{ trip.price }}</span>
+                        </div>
+                    </div>
+                    <!-- End New Widget -->
+                </div>
+            </div>
+
+             <!-- Row for Children (Free or distinct price?) -->
+            <div class="mb-3">
+                <label for="{{ form.children.id_for_label }}" class="form-label d-block">Children</label>
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    {{ form.children }}
+                    <!-- NEW Price Widget -->
+                    <div class="price-widget">
+                        <div class="price-label">ESTIMATED TOTAL</div>
+                        <div class="price-amount">
+                            €<span id="dynamicPrice_children">{{ trip.price }}</span>
+                        </div>
+                    </div>
+                    <!-- End New Widget -->
+                </div>
+            </div>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" form="bookingForm" class="btn btn-primary">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    
+    // Define our status colors
+    const statusColors = {
+        'active': 'green',   // green
+        'full': '#dc3545'  // A distinct red
+    };
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      },
+      events: "{% url 'trip_schedules_api' trip.id %}",
+      eventTimeFormat: {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      },
+      // ADD this function to set color based on status
+      eventDataTransform: function(eventInfo) {
+        eventInfo.color = statusColors[eventInfo.status] || '#6c757d'; // Default to gray
+        return eventInfo;
+      },
+      // --- FINAL AND MOST ROBUST SOLUTION ---
+      eventClick: function(info) {
+        info.jsEvent.preventDefault(); 
+
+        // ONLY open the modal if the event is 'active'
+        if (info.event.extendedProps.status === 'active') {
+            const scheduleId = info.event.id;
+            document.getElementById('id_scheduled_trip').value = scheduleId;
+            document.getElementById('bookingModalLabel').innerText = 'Book: ' + info.event.title;
+            document.getElementById('showModalBtn').click();
+        }
+      }
+    });
+    calendar.render();
+
+    // --- NEW: Price Calculation Logic ---
+    // Ensure trip.price is treated as a float number safe for JS
+    const pricePerPerson = parseFloat("{{ trip.price }}"); 
+    const adultsSelect = document.getElementById('{{ form.adults.id_for_label }}');
+    const childrenSelect = document.getElementById('{{ form.children.id_for_label }}');
+    const priceDisplay = document.getElementById('dynamicPrice');
+    const priceDisplayChildren = document.getElementById('dynamicPrice_children');
+
+    function updatePrice() {
+        if (!adultsSelect || !priceDisplay) return; // Guard clause
+
+        const numAdults = parseInt(adultsSelect.value) || 0;
+        const numChildren = parseInt(childrenSelect.value) || 0;
+        // Calculate total
+        const total = (numAdults * pricePerPerson);
+        const childrenTotal = (numChildren * pricePerPerson);
+        // Update text with 2 decimal places
+        priceDisplay.innerText = (total).toFixed(2);
+        priceDisplayChildren.innerText = (childrenTotal).toFixed(2);
+        
+    }
+
+    if (adultsSelect) {
+        adultsSelect.addEventListener('change', updatePrice);
+        childrenSelect.addEventListener('change', updatePrice);
+        // Run once on load to ensure correct starting price
+        updatePrice();
+    }
+  });
+  
+</script>
+{% endblock %}

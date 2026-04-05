@@ -1,0 +1,246 @@
+body {
+    background-color: #000000;
+    padding: 20px;
+    text-align: center;
+}
+
+.banner img {          /* Logo */
+    width: 475px;
+    height: auto;
+    top: 10px;
+}
+/* -------------NAVBAR STYLE ------------- */
+.navbar {
+    border: 1px solid #eb700b;
+     /* Adds slightly rounded corners */
+    border-radius: 8px;
+    /* Optional: Adds some padding so the content isn't touching the border */
+    padding: 0.5rem;
+    background-color: #000000;
+}
+
+.nav-item:hover {
+    background-color: #eb700b;
+    border-radius: 10px;
+}
+
+.dropdown-item:hover {
+    background-color: #eb700b;
+    border-radius: 10px;
+}
+
+.dropdown-item {
+    background-color: #000000;
+    color: white;
+    border-radius: 10px;
+}
+
+.dropdown-menu {
+    background-color: #000000;
+    border-radius: 10px;
+    color: white;
+}
+
+/* ------------------ CARDS STYLE ------------------ */
+.card {
+    background-color: #000000;
+    border: 1px solid #eb700b;
+    border-radius: 10px;
+    color: white;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.03); /* Zooms the image to 103% */
+    transition: transform 0.6s ease; /* Smooth transition */
+}
+
+.btn-primary {
+    background-color: #eb700b;
+    border: none;
+    color: white
+}
+
+.btn-primary:hover {
+    background-color: #f5a938;
+    border: none;
+    color: white
+}
+
+/* ------------------ CALENDAR STYLE ------------------ */
+#calendar {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 10px;
+    background-color: #000000;
+    border: 1px solid #eb700b;
+    border-radius: 10px;
+    color: white;
+}
+
+/* --- This is the fix for the title --- */
+#calendar .fc-toolbar-title {
+    color: white;
+}
+
+#calendar .fc-toolbar-chunk {
+    color: white;
+}
+
+/* Style for the Prev/Next/Today buttons */
+#calendar .fc-button {
+    background-color: #eb700b;
+    border: none;
+    color: white;
+}
+
+#calendar .fc-button:hover {
+    background-color: #f5a938;
+}
+
+/* Style for the day headers (Mon, Tue, Wed...) */
+#calendar .fc-col-header-cell-cushion {
+    color: #f5a938;
+    text-decoration: none;
+}
+
+/* Style for the day numbers in the calendar */
+#calendar .fc-daygrid-day-number {
+    color: white;
+    text-decoration: none;
+}
+
+#calendar .fc-event {
+    /* Force the border color to match your brand orange */
+    border-color: #eb700b !important;
+    /* Force the text color to be white for readability */
+    color: #ffffff !important; 
+    background-color: #eb700b ;
+}
+
+#calendar .fc-event:hover {
+    cursor: pointer;
+}
+
+/* This ensures the text inside the event stays white */
+#calendar .fc-event-title {
+    color: #ffffff !important;
+}
+
+/* ------- CALENDAR LEGEND STYLES ------- */
+.legend-dot {
+    height: 15px;
+    width: 15px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.legend-active { background-color: green; }
+.legend-full { background-color: #dc3545; }
+
+/* ------- ALERT MESSAGES STYLE ------- */
+.alert-success {
+    color: #0a3622; /* Dark green text */
+    background-color: #2c8b60; /* Light green background */
+    border-color: #a3cfbb; /* Medium green border */
+}
+
+/* ------- PAPYRUS STYLE FOR DESCRIPTIONS (PURE CSS) ------- */
+.papyrus-background {
+    /* Base color of the parchment */
+    background-color: #f8e8ab; /* A nice, soft "old paper" color */
+
+    /* 
+      This is the magic: We layer multiple gradients to create texture.
+      - The first creates subtle vertical "fibers".
+      - The second creates a very faint, noisy texture over the top.
+    */
+    background-image: 
+        linear-gradient(90deg, rgba(224, 212, 190, 0.4) 1px, transparent 1px),
+        linear-gradient(rgba(224, 212, 190, 0.4) 1px, transparent 1px);
+    
+    /* Control the "density" of the fibers and noise */
+    background-size: 4px 4px, 2px 2px;
+
+    /* CRITICAL: Dark text color for readability */
+    color: #3a2d1c; /* Dark, papyrus-ink brown */
+
+    /* Add some padding so text doesn't touch the edges */
+    padding: 30px;
+
+    /* A more subtle border and shadow that fits the theme */
+    border: 3px solid #c1a486;
+    border-radius: 3px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.6);
+    
+    /* Optional: Use a more thematic font if you like */
+    /* font-family: 'Garamond', 'Times New Roman', serif; */
+}
+
+/* Make sure links inside the papyrus are also dark */
+.papyrus-background a {
+    color: #5e4a33;
+    text-decoration: underline;
+}
+
+/* ------- BOOKING FORM STYLE ------- */
+.fs-5.text-warning {
+    border: #eb700b 1px solid;
+    background-color: #fbf7f700;
+    color: #eb700b !important;
+}
+
+.d-flex.align-items-center.gap-3 {
+    align-items: center;
+}
+
+.mb-3 {
+    align-items: center;
+}
+
+/* ------- PRICE WIDGET STYLE ------- */
+.price-widget {
+    background: linear-gradient(145deg, #1a1a1a, #000000); /* Subtle gradient */
+    border: 1px solid #eb700b;
+    border-radius: 8px;
+    padding: 8px 20px;
+    min-width: 140px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(235, 112, 11, 0.2); /* Orange glow shadow */
+    transition: transform 0.2s;
+}
+
+.price-widget:hover {
+    transform: translateY(-2px); /* Slight lift on hover */
+    box-shadow: 0 6px 20px rgba(235, 112, 11, 0.3);
+}
+
+.price-label {
+    font-size: 0.7rem;
+    color: #aaaaaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.price-amount {
+    font-size: 1.5rem; /* Larger text for the price */
+    font-weight: 700;
+    color: #f6f3f1; /* Your brand orange */
+    line-height: 1.1;
+}
+
+/* --------------- TESTIMONIALS / FEEDBACKS -----------------------*/
+.testimonials {
+    background-color: #000000;
+    border: 1px solid #eb700b;
+    border-radius: 10px;
+    color: white; /* Changed from black to white so you can read it! */
+    padding: 20px;
+    margin-top: 30px;
+}
+
+h2.text-center.mb-5 {
+    color: white;
+}

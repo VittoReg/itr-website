@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block banner %}
+<div class="banner">
+    <img src="{% static 'images/logo_edited.png' %}" class="img-fluid" alt="Itinera Romana Large Logo" >
+</div>
+{% endblock banner %}
+
+{% block content %}
+    <h2 class="text-white mb-4">Our Journeys Through History</h2>
+    <div class="row">
+        {% for trip in trips %}
+            <div class="col-md-4 mb-4 d-flex align-items-stretch">
+                <div class="card w-100">
+                    
+                    <!-- ADD THE IMAGE HERE -->
+                    <img src="{% static trip.image_path %}" class="card-img-top" alt="Image of {{ trip.name }}">
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ trip.name }}</h5>
+                        <p class="card-text flex-grow-1">{{ trip.description_short|truncatewords_html:55|safe }}</p>
+                        <a href="{% url 'trip_detail' trip.id %}" class="btn btn-primary mt-auto">View Schedule & Book</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <section class="testimonials py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Clients Say</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text">"This is an amazing product! It has helped me streamline my workflow and
+                            become more productive. I highly recommend it."</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <img src="https://via.placeholder.com/50" alt="Client 1" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="mb-0">Jane Doe</h6>
+                                <small>CEO, Company ABC</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text">"I was skeptical at first, but this service exceeded my expectations. The
+                            team is incredibly responsive and helpful."</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <img src="https://via.placeholder.com/50" alt="Client 2" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="mb-0">John Smith</h6>
+                                <small>Marketing Manager, XYZ Corp</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text">"The results speak for themselves. Our business has grown significantly
+                            since we started using this service. Thank you!"</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <img src="https://via.placeholder.com/50" alt="Client 3" class="rounded-circle me-3">
+                            <div>
+                                <h6 class="mb-0">Alice Johnson</h6>
+                                <small>Founder, Startup 123</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
