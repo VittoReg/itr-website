@@ -13,8 +13,11 @@ def update_schedule_status_on_save(sender, instance, **kwargs):
     schedule = instance.scheduled_trip
     
     # Calculate the sum of all participants for this schedule
-    total_participants = Booking.objects.filter(scheduled_trip=schedule).aggregate(total=Sum('num_participants'))['total'] or 0
-    
+    total_participants = Booking.objects.filter(scheduled_trip=schedule).aggregate(
+        total_adults=Sum('adults'), total_children=Sum('children')
+    )
+    # Add them safely (defaulting to 0 if there are no bookings)
+    total_participants = (total_participants['total_adults'] or 0) + (total_participants['total_children'] or 0)
     # If the schedule is full, update its status
     if total_participants >= schedule.max_participants:
         if schedule.status != 'full': # Only save if the status changes
@@ -35,7 +38,6 @@ def update_schedule_status_on_delete(sender, instance, **kwargs):
     """
     schedule = instance.scheduled_trip
     total_participants = Booking.objects.filter(scheduled_trip=schedule).aggregate(total=Sum('num_participants'))['total'] or 0
-
     if total_participants < schedule.max_participants:
         if schedule.status == 'full': # Only save if the status changes
             schedule.status = 'active'
