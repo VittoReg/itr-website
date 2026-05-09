@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from .models import Feedback, Trip, TripSchedule, Booking # Add Trip and Booking
 from .forms import BookingForm
 from django.contrib import messages
+from django.utils import timezone
 # Create your views here.
 def home(request):
     trips = Trip.objects.all().order_by('id')
@@ -37,9 +38,10 @@ def trip_detail(request, trip_id):
     return render(request, "website/trip_detail.html", context)
 
 
-def trip_schedules_api(request, trip_id):
+def trip_schedules_api(request, trip_id): # Calendar is using this data
     # Get only the schedules for the specific trip_id from the URL
-    schedules = TripSchedule.objects.filter(trip_id=trip_id)
+    schedules = TripSchedule.objects.filter(trip_id=trip_id, 
+                                            start_datetime__gte=timezone.now()).order_by('start_datetime')
 
     # Prepare the data to be returned as JSON
     events = []

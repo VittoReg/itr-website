@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Initialize environment variables
 env = environ.Env(
-    DEBUG=(bool, False) # Default to False for production safety
+    DEBUG=(bool, False) # Safety Net, Default to False for production safety
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
