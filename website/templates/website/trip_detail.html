@@ -44,7 +44,7 @@
       </div>
       <div class="modal-body">
         <!-- Replace the placeholder paragraph with a real form -->
-        <form id="bookingForm" method="POST" action="{% url 'trip_detail' trip.id %}">
+        <form id="bookingForm" method="POST" action="{% url 'website:trip_detail' trip.id %}">
             {% csrf_token %}
             
             <input type="hidden" name="scheduled_trip" id="id_scheduled_trip">
@@ -92,9 +92,17 @@
             </div>
 
         </form>
+
+        <!-- STRIPE PAYMENT BUTTON PLACEHOLDER -->
+        <div id="payment-request-button" class="mt-4">
+            <!-- The Stripe Payment Request Button will be inserted here -->
+        </div>
+        <div id="payment-message" class="hidden text-center mt-2"></div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <!-- This button is now just for traditional form submission if needed, payment is handled by Stripe button -->
         <button type="submit" form="bookingForm" class="btn btn-primary">Confirm Booking</button>
       </div>
     </div>
@@ -105,76 +113,104 @@
 {% block extra_scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // --- CALENDAR LOGIC (no changes here) ---
     const calendarEl = document.getElementById('calendar');
-    
-    // Define our status colors
-    const statusColors = {
-        'active': 'green',   // green
-        'full': '#dc3545'  // A distinct red
-    };
-
+    const statusColors = { 'active': 'green', 'full': '#dc3545' };
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-      },
-      events: "{% url 'trip_schedules_api' trip.id %}",
-      eventTimeFormat: {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      },
-      // ADD this function to set color based on status
-      eventDataTransform: function(eventInfo) {
-        eventInfo.color = statusColors[eventInfo.status] || '#6c757d'; // Default to gray
+      headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+      events: "{% url 'website:trip_schedules_api' trip.id %}",
+      eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+      eventDataTransform: (eventInfo) => {
+        eventInfo.color = statusColors[eventInfo.status] || '#6c757d';
         return eventInfo;
       },
-      // --- FINAL AND MOST ROBUST SOLUTION ---
-      eventClick: function(info) {
-        info.jsEvent.preventDefault(); 
-
-        // ONLY open the modal if the event is 'active'
+      eventClick: (info) => {
+        info.jsEvent.preventDefault();
         if (info.event.extendedProps.status === 'active') {
-            const scheduleId = info.event.id;
-            document.getElementById('id_scheduled_trip').value = scheduleId;
+            document.getElementById('id_scheduled_trip').value = info.event.id;
             document.getElementById('bookingModalLabel').innerText = 'Book: ' + info.event.title;
+            updatePrice();
             document.getElementById('showModalBtn').click();
         }
       }
     });
     calendar.render();
 
-    // --- NEW: Price Calculation Logic ---
-    // Ensure trip.price is treated as a float number safe for JS
-    const pricePerPerson = parseFloat("{{ trip.price }}"); 
+    // --- NEW STRIPE EXPRESS CHECKOUT & PRICE LOGIC ---
+    const pricePerPerson = parseFloat("{{ trip.price|stringformat:'f' }}");
     const adultsSelect = document.getElementById('{{ form.adults.id_for_label }}');
     const childrenSelect = document.getElementById('{{ form.children.id_for_label }}');
     const priceDisplay = document.getElementById('dynamicPrice');
     const priceDisplayChildren = document.getElementById('dynamicPrice_children');
+    const paymentElementContainer = document.getElementById('payment-request-button');
+    const bookingForm = document.getElementById('bookingForm');
 
-    function updatePrice() {
-        if (!adultsSelect || !priceDisplay) return; // Guard clause
+    const stripe = Stripe("{{ stripe_publishable_key }}");
+    let elements; // Will hold Stripe elements
 
+    // Function to get the current total amount
+    function getCurrentTotal() {
         const numAdults = parseInt(adultsSelect.value) || 0;
         const numChildren = parseInt(childrenSelect.value) || 0;
-        // Calculate total
-        const total = (numAdults * pricePerPerson);
-        const childrenTotal = (numChildren * pricePerPerson);
-        // Update text with 2 decimal places
-        priceDisplay.innerText = (total).toFixed(2);
-        priceDisplayChildren.innerText = (childrenTotal).toFixed(2);
-        
+        return (numAdults + numChildren) * pricePerPerson;
     }
 
-    if (adultsSelect) {
-        adultsSelect.addEventListener('change', updatePrice);
-        childrenSelect.addEventListener('change', updatePrice);
-        // Run once on load to ensure correct starting price
-        updatePrice();
+    // Function to update the price display
+    function updatePrice() {
+        const numAdults = parseInt(adultsSelect.value) || 0;
+        const numChildren = parseInt(childrenSelect.value) || 0;
+        priceDisplay.innerText = (numAdults * pricePerPerson).toFixed(2);
+        priceDisplayChildren.innerText = (numChildren * pricePerPerson).toFixed(2);
+        
+        // Re-initialize Stripe elements when the price changes
+        initializeStripe();
     }
+
+    adultsSelect.addEventListener('change', updatePrice);
+    childrenSelect.addEventListener('change', updatePrice);
+
+    async function initializeStripe() {
+        const totalAmount = getCurrentTotal();
+        if (totalAmount <= 0) {
+            paymentElementContainer.innerHTML = ''; // Clear any existing button
+            return;
+        }
+
+        // Create a PaymentIntent on the server
+        const { clientSecret, error: backendError } = await fetch("{% url 'website:create_payment_intent' %}", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ amount: totalAmount }),
+        }).then((r) => r.json());
+
+        if (backendError) {
+            console.error('Backend error:', backendError);
+            return;
+        }
+
+        // 1. Create an `elements` instance with the client secret
+        elements = stripe.elements({ clientSecret });
+
+        // 2. Create the Express Checkout Element
+        const expressCheckoutElement = elements.create('expressCheckout');
+
+        // 3. Mount the element to its container
+        expressCheckoutElement.mount('#payment-request-button');
+
+        // 4. Add the 'confirm' event listener
+        expressCheckoutElement.on('confirm', async (event) => {
+            // The payment is confirmed by the user, now submit the form
+            // The form data (name, email, etc.) will be sent along with the payment success
+            bookingForm.submit();
+        });
+    }
+
+    // Initial call to set price and initialize Stripe
+    updatePrice();
   });
-  
 </script>
 {% endblock %}

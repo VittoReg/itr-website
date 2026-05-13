@@ -39,7 +39,7 @@
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
+                            <a class="nav-link active" aria-current="page" href="{% url 'website:home' %}">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Features</a>
@@ -78,6 +78,9 @@
     
     <!-- ADD FULLCALENDAR JS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+
+    <!-- ADD THE STRIPE.JS SCRIPT HERE -->
+    <script src="https://js.stripe.com/v3/"></script>
 
     <!-- Your custom JS (optional, loads after Bootstrap) -->
     <script src="{% static 'js/main.js' %}"></script>

@@ -4,6 +4,14 @@ from .models import Feedback, Trip, TripSchedule, Booking # Add Trip and Booking
 from .forms import BookingForm
 from django.contrib import messages
 from django.utils import timezone
+from django.conf import settings # Add this line to import settings for Stripe keys
+# Add these imports at the top with your other imports
+import stripe
+import json
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
+
 # Create your views here.
 def home(request):
     trips = Trip.objects.all().order_by('id')
@@ -26,14 +34,16 @@ def trip_detail(request, trip_id):
                 booking.scheduled_trip = scheduled_trip
                 booking.save()
                 messages.success(request, f'Thank you! Your trip to {trip.name} has been successfully booked.')
-                return redirect('home')
+                return redirect('website:home')
             except (TripSchedule.DoesNotExist, ValueError):
                 form.add_error(None, "An error occurred. The selected trip schedule was not found.")
     else:
         form = BookingForm()
 
     # Add the trip object to the context
-    context = {'form': form, 'trip': trip}
+    context = {'form': form, 
+               'trip': trip,
+               'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY}  # Pass the Stripe publishable key to the template
     # Use the new 'trip_detail.html' template
     return render(request, "website/trip_detail.html", context)
 
@@ -54,3 +64,30 @@ def trip_schedules_api(request, trip_id): # Calendar is using this data
             'status': schedule.status,
         })
     return JsonResponse(events, safe=False)
+
+# Set the Stripe API key from your settings
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+@csrf_exempt # For API endpoints, CSRF handling can be different. This is the simplest approach.
+@require_POST
+def create_payment_intent(request):
+    try:
+        # Decode the incoming JSON data from the frontend
+        data = json.loads(request.body)
+        total_amount = data.get('amount')
+
+        # Create a PaymentIntent with the amount and currency
+        # The amount must be in the smallest currency unit (e.g., cents for EUR)
+        intent = stripe.PaymentIntent.create(
+            amount=int(total_amount * 100),
+            currency='eur',
+            automatic_payment_methods={'enabled': True},
+        )
+
+        # Send the client secret back to the frontend
+        return JsonResponse({
+            'clientSecret': intent.client_secret
+        })
+    except Exception as e:
+        # Return a JSON response with the error message
+        return JsonResponse({'error': str(e)}, status=400)
