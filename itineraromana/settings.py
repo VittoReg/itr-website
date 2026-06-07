@@ -137,7 +137,12 @@ STATICFILES_DIRS = [
 ]
 
 # The absolute path to the directory where collectstatic will collect static files for deployment.
+# for Nginx to serve.
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# This is where user-uploaded files will be stored
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Enable WhiteNoise compression and caching features
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
