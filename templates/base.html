@@ -42,7 +42,7 @@
                             <a class="nav-link active" aria-current="page" href="{% url 'website:home' %}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Features</a>
+                            <a class="nav-link" href="{% url 'website:shop' %}">Shop</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Pricing</a>
@@ -57,6 +57,19 @@
                                 <li><a class="dropdown-item" href="#">Something else here</a></li>
                             </ul>
                         </li>
+                        <!-- In your navbar section -->
+                        <a href="{% url 'website:cart_detail' %}">
+                            <i class="fa fa-shopping-cart"></i> <!-- Example using Font Awesome -->
+                            <span>
+                                {% with total_items=cart|length %}
+                                    {% if total_items > 0 %}
+                                        {{ total_items }} item{{ total_items|pluralize }}, ${{ cart.get_total_price }}
+                                    {% else %}
+                                        Cart is empty
+                                    {% endif %}
+                                {% endwith %}
+                            </span>
+                        </a>
                     </ul>
                 </div>
             </div>

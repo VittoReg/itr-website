@@ -10,6 +10,7 @@ import stripe
 import json
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from .cart import Cart  # Import the Cart class from cart.py
 
 
 # Create your views here.
@@ -18,6 +19,32 @@ def home(request):
     feedbacks = Feedback.objects.all().order_by('-rating', '-feedback_datetime')[:5]  # Get the latest 5 feedbacks
     context = {'trips': trips, 'feedbacks': feedbacks}
     return render(request, "website/home.html", context)
+
+def shop(request):
+    trips = Trip.objects.all().order_by('id')
+    context = {'trips': trips}
+    return render(request, "website/shop.html", context)
+
+# Cart ------------------------------------------------------
+@require_POST
+def cart_add(request, trip_id):
+    cart = Cart(request)
+    trip = get_object_or_404(Trip, id=trip_id)
+    # For simplicity, we'll add one item. You can add a quantity selector in your template later.
+    cart.add(trip=trip, quantity=1)
+    return redirect('website:cart_detail')
+
+@require_POST
+def cart_remove(request, trip_id):
+    cart = Cart(request)
+    trip = get_object_or_404(Trip, id=trip_id)
+    cart.remove(trip)
+    return redirect('website:cart_detail')
+
+def cart_detail(request):
+    cart = Cart(request)
+    return render(request, 'website/cart_detail.html', {'cart': cart})
+# Cart END ------------------------------------------------------
 
 def trip_detail(request, trip_id):
     # Get the specific trip we are looking at, or show a 404 error if not found

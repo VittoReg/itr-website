@@ -1,0 +1,53 @@
+<!-- itineraromana/website/templates/website/cart_detail.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1>Your Shopping Cart</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Remove</th>
+                <th>Unit Price</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart %}
+                {% with trip=item.trip %}
+                <tr>
+                    <td>
+                        <a href="{{ trip.get_absolute_url }}">
+                            <!-- Assuming you have an image field on your Trip model -->
+                            <img src="{% if trip.image %}{{ trip.image.url }}{% else %}{% static 'images/no_image.png' %}{% endif %}" style="height: 80px;">
+                        </a>
+                    </td>
+                    <td>{{ trip.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                        <form action="{% url 'website:cart_remove' trip.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                        </form>
+                    </td>
+                    <td class="num">${{ item.price }}</td>
+                    <td class="num">${{ item.total_price }}</td>
+                </tr>
+                {% endwith %}
+            {% endfor %}
+            <tr class="total">
+                <td colspan="5">Total</td>
+                <td class="num">${{ cart.get_total_price }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="text-right">
+        <a href="{% url 'website:shop' %}" class="btn btn-secondary">Continue shopping</a>
+        <a href="#" class="btn btn-primary">Checkout</a>
+    </p>
+</div>
+{% endblock %}

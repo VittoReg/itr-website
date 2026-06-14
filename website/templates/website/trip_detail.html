@@ -21,15 +21,6 @@
     </div>
     <br><br>
 
-        <!-- ADD THE CALENDAR LEGEND HERE -->
-    <div class="d-flex justify-content-center gap-4 mb-4 text-white">
-        <span><span class="legend-dot legend-active"></span> Active</span>
-        <span><span class="legend-dot legend-full"></span> Full</span>
-    </div>
-
-    <!-- This is where the calendar will appear -->
-    <div id="calendar"></div>
-
 <!-- ADD THIS HIDDEN BUTTON -->
 <button id="showModalBtn" type="button" class="d-none" data-bs-toggle="modal" data-bs-target="#bookingModal">
 </button>
@@ -112,30 +103,6 @@
 
 {% block extra_scripts %}
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // --- CALENDAR LOGIC (no changes here) ---
-    const calendarEl = document.getElementById('calendar');
-    const statusColors = { 'active': 'green', 'full': '#dc3545' };
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-      events: "{% url 'website:trip_schedules_api' trip.id %}",
-      eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-      eventDataTransform: (eventInfo) => {
-        eventInfo.color = statusColors[eventInfo.status] || '#6c757d';
-        return eventInfo;
-      },
-      eventClick: (info) => {
-        info.jsEvent.preventDefault();
-        if (info.event.extendedProps.status === 'active') {
-            document.getElementById('id_scheduled_trip').value = info.event.id;
-            document.getElementById('bookingModalLabel').innerText = 'Book: ' + info.event.title;
-            updatePrice();
-            document.getElementById('showModalBtn').click();
-        }
-      }
-    });
-    calendar.render();
 
     // --- NEW STRIPE EXPRESS CHECKOUT & PRICE LOGIC ---
     const pricePerPerson = parseFloat("{{ trip.price|stringformat:'f' }}");
@@ -211,6 +178,5 @@
 
     // Initial call to set price and initialize Stripe
     updatePrice();
-  });
 </script>
 {% endblock %}
