@@ -38,12 +38,12 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
                     <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'website:home' %}">Home</a>
+                        <li class="nav-item">    <!-- Dynamically change the bold format based on the current page -->
+                            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" aria-current="page" href="{% url 'website:home' %}">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'website:shop' %}">Shop</a>
-                        </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'shop' %}active{% endif %}" href="{% url 'website:shop' %}">Shop</a>
+                        </li> -->
                         <li class="nav-item">
                             <a class="nav-link" href="#">Pricing</a>
                         </li>

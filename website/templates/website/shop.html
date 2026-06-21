@@ -1,2 +1,42 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block title %}Shop - Itinera Romana{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center my-4">Our Tours</h1>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for trip in trips %}
+        <div class="col">
+            <div class="card h-100">
+                <!-- Trip Image -->
+                {% if trip.image_path %}
+                    <img src="{% static trip.image_path %}" class="card-img-top" alt="{{ trip.name }}">
+                {% else %}
+                    <!-- Placeholder image if no trip image is available -->
+                    <img src="https://via.placeholder.com/400x300.png?text=Itinera+Romana" class="card-img-top" alt="Placeholder Image">
+                {% endif %}
+                
+                <div class="card-body d-flex flex-column">
+                    <!-- Trip Name -->
+                    <h5 class="card-title">{{ trip.name }}</h5>
+                    
+                    <!-- Short Description -->
+                    <p class="card-text">{{ trip.description_short }}</p>
+                    
+                    <!-- Price -->
+                    <p class="card-text"><strong>Price:</strong> ${{ trip.price }}</p>
+                    
+                    <!-- "View Details" Button -->
+                    <div class="mt-auto">
+                        <a href="{% url 'website:trip_detail' trip.id %}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
