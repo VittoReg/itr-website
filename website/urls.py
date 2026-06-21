@@ -6,7 +6,7 @@ app_name = 'website'
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('shop/', views.shop, name='shop'),
+    #path('shop/', views.shop, name='shop'),
     path('trips/<int:trip_id>/', views.trip_detail, name='trip_detail'),
     # API endpoint for trip schedules (calendar events)
     path('api/trips/<int:trip_id>/schedules/', views.trip_schedules_api, name='trip_schedules_api'),

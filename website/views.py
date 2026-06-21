@@ -20,10 +20,10 @@ def home(request):
     context = {'trips': trips, 'feedbacks': feedbacks}
     return render(request, "website/home.html", context)
 
-def shop(request):
-    trips = Trip.objects.all().order_by('id')
-    context = {'trips': trips}
-    return render(request, "website/shop.html", context)
+#def shop(request):
+ #   trips = Trip.objects.all().order_by('id')
+  #  context = {'trips': trips}
+   # return render(request, "website/shop.html", context)
 
 # Cart ------------------------------------------------------
 @require_POST
@@ -31,14 +31,14 @@ def cart_add(request, trip_id):
     cart = Cart(request)
     trip = get_object_or_404(Trip, id=trip_id)
     # For simplicity, we'll add one item. You can add a quantity selector in your template later.
-    cart.add(trip=trip, quantity=1)
-    return redirect('website:cart_detail')
+    cart.add_to_cart(trip=trip, quantity=1)
+    return JsonResponse({'status': 'ok', 'cart_total_items': len(cart)})
 
 @require_POST
 def cart_remove(request, trip_id):
     cart = Cart(request)
     trip = get_object_or_404(Trip, id=trip_id)
-    cart.remove(trip)
+    cart.remove_from_cart(trip)
     return redirect('website:cart_detail')
 
 def cart_detail(request):

@@ -10,6 +10,11 @@
         {{ trip.description|safe }}
     </div>
 
+    <!-- Add to cart button -->
+    <button id="addToCartBtn" class="btn btn-primary mb-4" data-trip-id="{{ trip.id }}"  data-add-to-cart-url="{% url 'website:cart_add' 0 %}" data-trip-name="{{ trip.name }}" data-trip-price="{{ trip.price }}">
+        Add to Cart {{ trip.price }} €
+    </button>
+
     <!-- Trip Includes List -->
     <div class="text-white mb-4 mx-auto" style="max-width: 900px;">
         <h3 class="text-center mb-3">Trip Includes:</h3>
@@ -103,6 +108,45 @@
 
 {% block extra_scripts %}
 <script>
+    // --- ADD TO CART LOGIC ---
+    document.getElementById('addToCartBtn').addEventListener('click', function() {
+        const tripId = this.dataset.tripId;
+        // Get the base URL from the button's data attribute
+        const baseUrl = this.dataset.addToCartUrl;
+        // Replace the placeholder '0' with the actual tripId
+        const url = baseUrl.replace('0', tripId);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            // You could send more data here if needed, like quantity
+            // body: JSON.stringify({ quantity: 1 }) 
+        })
+        .then(response => {
+            if (!response.ok) {
+                // If the response is not OK, throw an error to be caught by the .catch block
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'ok') {
+                alert('Trip added to cart!');
+                // You can also update the cart count here if you have an element for it
+                // document.getElementById('cart-item-count').innerText = data.cart_total_items;
+            } else {
+                alert('Could not add trip to cart.');
+            }
+        })
+        .catch(error => {
+            console.error('Error adding to cart:', error);
+            alert('There was an issue adding the trip to your cart. Check the console for details.');
+        });
+    });
+
 
     // --- NEW STRIPE EXPRESS CHECKOUT & PRICE LOGIC ---
     const pricePerPerson = parseFloat("{{ trip.price|stringformat:'f' }}");
